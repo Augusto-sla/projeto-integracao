@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from database import init_dataBase, get_connection
+import datetime
+
 
 
 app = Flask(__name__, static_folder='static', static_url_path='') # Initialize a Flask instance
@@ -17,9 +19,9 @@ def status():
     cursor = connection.cursor()
     cursor.execute('SELECT COUNT(*) as total_orders FROM orders')
     result = cursor.fetchone()
-    conn.close()
+    connection.close()
 
-    return jsonnify({
+    return jsonify({
         "status":   "online",
         "system":   "Production Orders System",
         "version":  "1.0.0",
@@ -28,8 +30,14 @@ def status():
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
 
-@app.route('/route', methods=['GETS'])
+@app.route('/orders', methods=['GET'])
 def list_orders():
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM orders ORDER BY id DESC")
+    orders = cursor.fetchall()
+    connection.close()
+
     return jsonify([dict(o) for o in orders])
 
 @app.route('/fabrica/<name>')
@@ -41,4 +49,4 @@ def boas_vindas(name):
 
 if __name__ == "__main__":
     init_dataBase()
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
