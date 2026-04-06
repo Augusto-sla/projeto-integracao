@@ -3,7 +3,7 @@ from    flask_cors import CORS
 from    database import init_dataBase, get_connection
 import  datetime
 from    functools import wraps
-
+import  html
 
 app = Flask(__name__, static_folder='static', static_url_path='') # Initialize a Flask instance
 CORS(app)
@@ -98,18 +98,21 @@ def create_order():
     if not data:
         return jsonify({'error': 'requisition body non-existent or invalid.'}), 400
 
-    product = data.get('product', '').strip()
+    product = html.escape(data.get('product', '').strip())
 
     if not product:
         return jsonify({'error': 'field "product" is mandatory and can not be empty.'}), 400
 
+    if len(product) > 200:
+        return jsonify({'error': 'Produto name too long (max 200 characters).'}), 400
+    
     quantity = data.get('quantity')
     if quantity is None:
         return jsonify({'error': 'field "quantity" is mandatory and can not be empty.'}), 400
     
     try:
         quantity = int(quantity)
-        if quantity <= 0:
+        if quantity <= 0 or quantity > 9999:
             raise ValueError()
     except (ValueError, TypeError):
         return jsonify({'error': 'field "quantity" must be a positive integer.'}), 400
