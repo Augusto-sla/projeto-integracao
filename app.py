@@ -1,18 +1,51 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from database import init_dataBase, get_connection
-import datetime
-
+from    flask import Flask, jsonify, request
+from    flask_cors import CORS
+from    database import init_dataBase, get_connection
+import  datetime
+from    functools import wraps
 
 
 app = Flask(__name__, static_folder='static', static_url_path='') # Initialize a Flask instance
 CORS(app)
 
+API_KEY = 'extremely-secure-api-key'
+
+def autenticator(f):
+    """
+    Decorator that protects the routes demanding a valid API key
+
+    The client must send the header:
+        X-API-Key: <API key value>
+
+    If the key in inexistent or incorrect returns 401 'unathourized'
+    if correct, executes the function as intended
+
+    """
+    @wraps(f)
+    def decorator(*args, **kwargs):
+        # Lê o cabeçalho X-API-Key da requisição
+        received_key = request.headers.get('X-API-Key')
+        if not received_key:
+            return jsonify({
+            'error': 'Autentication needed.',
+            'instrution': 'Send the header X-API-Key whith its key.'
+            }), 401
+        if received_key != API_KEY:
+            return jsonify({
+            'error': 'API key invalid or expired.'
+            }), 403
+            
+        return f(*args, **kwargs)
+    
+    return decorator    
+        
 @app.route("/")
+@autenticator
 def index():
     return app.send_static_file('index.html')
 
 @app.route("/status")
+@autenticator
 def status():
     # health checks the API
     connection = get_connection()
@@ -31,6 +64,7 @@ def status():
     })
 
 @app.route('/orders', methods=['GET'])
+@autenticator
 def list_orders():
     connection = get_connection()
     cursor = connection.cursor()
@@ -41,6 +75,7 @@ def list_orders():
     return jsonify([dict(o) for o in orders])
 
 @app.route('/orders/<int:order_id>', methods=['GET'])
+@autenticator
 def search_order(order_id):
     connection = get_connection()
     cursor = connection.cursor()
@@ -56,6 +91,7 @@ def search_order(order_id):
     return jsonify(dict(order)), 200
 
 @app.route('/orders', methods=['POST'])
+@autenticator
 def create_order():
     data = request.get_json()
     
@@ -101,6 +137,7 @@ def create_order():
     return jsonify(dict(new_order)), 201
 
 @app.route('/orders/<int:order_id>', methods=['PUT'])
+@autenticator
 def update_orders(order_id):
     data = request.get_json()
      
@@ -133,6 +170,7 @@ def update_orders(order_id):
     return jsonify(dict(new_order)), 200
 
 @app.route('/orders/<int:order_id>', methods=['DELETE'])
+@autenticator
 def delete_order(order_id):
     connection = get_connection()
     cursor = connection.cursor()
@@ -151,10 +189,10 @@ def delete_order(order_id):
     return jsonify({'mensage': f'Order {order_id} ({product_name}) removed with success.', 'id_removede': order_id}), 200
 
 @app.route('/fabrica/<name>')
+@autenticator
 def welcome(name):
     return jsonify({
-    "mensage": f"Bem-vindo, {name}! Sistema de OP online.",
-    "dica": "Esta e uma rota com parametro dinamico do Flask."
+    "mensage": f"Welcome, {name}! OP system online.",
 })
 
 if __name__ == "__main__":

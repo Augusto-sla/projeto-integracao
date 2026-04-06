@@ -105,6 +105,13 @@
 
   <script>
     const API_URL = 'http://localhost:5000';
+    
+    // Configurações de Autenticação
+    const API_KEY = 'senai-cibersistemas-2026-chave-segura';
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      'X-API-Key': API_KEY
+    };
 
     async function checkStatus() {
       const badge = document.getElementById('status-badge');
@@ -194,7 +201,7 @@
       try {
         const r = await fetch(`${API_URL}/orders`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders, // Incluindo a API Key
           body: JSON.stringify({ product, quantity: Number(quantity), status })
         });
         const d = await r.json();
@@ -220,7 +227,7 @@
       try {
         const r = await fetch(`${API_URL}/orders/${id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: authHeaders, // Incluindo a API Key
           body: JSON.stringify({ status: newStatus })
         });
         const d = await r.json();
@@ -242,7 +249,10 @@
       if (!window.confirm(`Delete Order #${id}? This action is permanent.`)) return;
       
       try {
-        const r = await fetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
+        const r = await fetch(`${API_URL}/orders/${id}`, { 
+          method: 'DELETE',
+          headers: { 'X-API-Key': API_KEY } // DELETE não tem Content-Type/body, apenas a chave
+        });
         const d = await r.json();
         
         if (r.ok) {
