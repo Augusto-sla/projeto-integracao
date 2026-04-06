@@ -53,7 +53,7 @@ def search_order(order_id):
     if order is None:
         return jsonify ({'error': f'order {order_id} not found.'}), 404
 
-    return jsonify(dict(ordem)), 200
+    return jsonify(dict(order)), 200
 
 @app.route('/orders', methods=['POST'])
 def create_order():
@@ -82,7 +82,7 @@ def create_order():
     status = data.get('status', 'pending')
 
     if status not in valid_status:
-        return jsonify({'error': f'invalid statu. Use: {valid_satus}'}), 400
+        return jsonify({'error': f'invalid status Use: {valid_status}'}), 400
 
     connection = get_connection()
     cursor = connection.cursor()

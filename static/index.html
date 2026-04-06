@@ -1,9 +1,281 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>teste</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Production Orders System</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #263238; }
+    header { background: linear-gradient(135deg, #1F3864, #00897B); color: white; padding: 1.2rem 2rem; box-shadow: 0 2px 8px rgba(0, 0, 0, .2); }
+    .header-content { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 1.4rem; }
+    #status-badge { font-size: .8rem; padding: 4px 12px; border-radius: 20px; background: rgba(255, 255, 255, .2); border: 1px solid rgba(255, 255, 255, .4); }
+    #status-badge.online { background: #00897B; border-color: #00897B; }
+    #status-badge.offline { background: #B71C1C; border-color: #B71C1C; }
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1.5rem; }
+    .card { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0, 0, 0, .08); }
+    .card h2 { font-size: 1.1rem; color: #00897B; margin-bottom: 1rem; padding-bottom: .5rem; border-bottom: 2px solid #E0F2F1; }
+    .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media(max-width:700px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: .85rem; font-weight: 600; color: #546E7A; }
+    input, select { padding: .55rem .8rem; border: 1.5px solid #CFD8DC; border-radius: 6px; font-size: .95rem; outline: none; }
+    input:focus, select:focus { border-color: #00897B; }
+    button { padding: .6rem 1.4rem; border: none; border-radius: 6px; font-size: .95rem; font-weight: 600; cursor: pointer; }
+    #btn-register { background: #00897B; color: white; }
+    .btn-update { background: #E0F2F1; color: #00897B; font-size: .85rem; }
+    .btn-delete { background: #FFEBEE; color: #C62828; font-size: .8rem; padding: 4px 10px; }
+    .message { margin-top: .8rem; padding: .6rem 1rem; border-radius: 6px; font-size: .9rem; }
+    .message.success { background: #E8F5E9; color: #2E7D32; border-left: 4px solid #2E7D32; }
+    .message.error { background: #FFEBEE; color: #C62828; border-left: 4px solid #C62828; }
+    .hidden { display: none; }
+    .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th { background: #263238; color: white; padding: 10px 12px; text-align: left; }
+    td { padding: 10px 12px; border-bottom: 1px solid #ECEFF1; }
+    tr:hover td { background: #F5F5F5; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .78rem; font-weight: 700; }
+    .badge-pending { background: #FFF9C4; color: #F57F17; }
+    .badge-progress { background: #E3F2FD; color: #0D47A1; }
+    .badge-done { background: #E8F5E9; color: #2E7D32; }
+    .select-status { padding: 3px 6px; border: 1px solid #CFD8DC; border-radius: 4px; font-size: .82rem; }
+    #loading { text-align: center; padding: 1rem; color: #00897B; font-weight: 600; }
+    #no-data { text-align: center; padding: 2rem; color: #90A4AE; }
+  </style>
 </head>
 <body>
-    <h1>hellow</h1>
+  <header>
+    <div class="header-content">
+      <h1>Production Orders System</h1>
+      <span id="status-badge">Checking...</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>New Production Order</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="product">Product</label>
+          <input type="text" id="product" placeholder="Ex: WEG W22 Electric Motor">
+        </div>
+        <div class="form-group">
+          <label for="quantity">Quantity</label>
+          <input type="number" id="quantity" placeholder="Ex: 100" min="1">
+        </div>
+        <div class="form-group">
+          <label for="new-status">Initial Status</label>
+          <select id="new-status">
+            <option value="pending">pending</option>
+            <option value="in progress">in progress</option>
+            <option value="done">done</option>
+          </select>
+        </div>
+      </div>
+      <button id="btn-register" onclick="createOrder()">Register Order</button>
+      <div id="message" class="message hidden"></div>
+    </section>
+
+    <section class="card">
+      <div class="list-header">
+        <h2>Registered Orders</h2>
+        <button onclick="loadOrders()" class="btn-update">Update List</button>
+      </div>
+      <div id="loading" class="hidden">Loading...</div>
+      <div class="table-container">
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Status</th>
+              <th>Created at</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <p id="no-data" class="hidden">No orders registered.</p>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = 'http://localhost:5000';
+
+    async function checkStatus() {
+      const badge = document.getElementById('status-badge');
+      try {
+        const r = await fetch(`${API_URL}/status`);
+        const d = await r.json();
+        badge.textContent = `API Online | ${d.total_orders} orders`;
+        badge.className = 'online';
+      } catch { 
+        badge.textContent = 'API Offline';
+        badge.className = 'offline'; 
+      }
+    }
+
+    function renderBadge(s) {
+      const c = {
+        'pending': 'badge-pending',
+        'in progress': 'badge-progress',
+        'done': 'badge-done'
+      };
+      return `<span class="badge ${c[s] || ''}">${s}</span>`;
+    }
+
+    async function loadOrders() {
+      const loading = document.getElementById('loading');
+      const noData = document.getElementById('no-data');
+      const table = document.getElementById('orders-table');
+      const body = document.getElementById('table-body');
+      
+      loading.classList.remove('hidden');
+      table.classList.add('hidden');
+      noData.classList.add('hidden');
+      
+      try {
+        const r = await fetch(`${API_URL}/orders`);
+        const orders = await r.json();
+        
+        loading.classList.add('hidden');
+        
+        if (orders.length === 0) {
+          noData.classList.remove('hidden');
+          return;
+        }
+        
+        body.innerHTML = orders.map(o => `
+          <tr id="row-${o.id}">
+            <td>${o.id}</td>
+            <td>${o.product}</td>
+            <td>${o.quantity}</td>
+            <td>${renderBadge(o.status)}</td>
+            <td>${o.created_at}</td>
+            <td>
+              <select class="select-status" onchange="updateStatus(${o.id}, this.value)">
+                <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>pending</option>
+                <option value="in progress" ${o.status === 'in progress' ? 'selected' : ''}>in progress</option>
+                <option value="done" ${o.status === 'done' ? 'selected' : ''}>done</option>
+              </select>
+              <button class="btn-delete" onclick="deleteOrder(${o.id})">Delete</button>
+            </td>
+          </tr>`).join('');
+          
+        table.classList.remove('hidden');
+      } catch (e) {
+        loading.classList.add('hidden');
+        showMessage('Error connecting to the API.', 'error');
+      }
+    }
+
+    async function createOrder() {
+      const product = document.getElementById('product').value.trim();
+      const quantity = document.getElementById('quantity').value;
+      const status = document.getElementById('new-status').value;
+      
+      if (!product) {
+        showMessage('Fill in the product name.', 'error');
+        return;
+      }
+      if (!quantity || Number(quantity) <= 0) {
+        showMessage('Invalid quantity.', 'error');
+        return;
+      }
+      
+      const btn = document.getElementById('btn-register');
+      btn.disabled = true; 
+      btn.textContent = 'Registering...';
+      
+      try {
+        const r = await fetch(`${API_URL}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product, quantity: Number(quantity), status })
+        });
+        const d = await r.json();
+        
+        if (r.ok) {
+          showMessage(`Order #${d.id} registered!`, 'success');
+          document.getElementById('product').value = '';
+          document.getElementById('quantity').value = '';
+          await loadOrders(); 
+          await checkStatus();
+        } else {
+          showMessage(d.error || 'Error registering.', 'error');
+        }
+      } catch {
+        showMessage('Connection error.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Register Order';
+      }
+    }
+
+    async function updateStatus(id, newStatus) {
+      try {
+        const r = await fetch(`${API_URL}/orders/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const d = await r.json();
+        
+        if (r.ok) {
+          showMessage(`Order #${id} updated to '${newStatus}'.`, 'success');
+          document.getElementById(`row-${id}`).cells[3].innerHTML = renderBadge(newStatus);
+          await checkStatus();
+        } else { 
+          showMessage(d.error || 'Error.', 'error'); 
+          await loadOrders(); 
+        }
+      } catch {
+        showMessage('Connection error.', 'error');
+      }
+    }
+
+    async function deleteOrder(id) {
+      if (!window.confirm(`Delete Order #${id}? This action is permanent.`)) return;
+      
+      try {
+        const r = await fetch(`${API_URL}/orders/${id}`, { method: 'DELETE' });
+        const d = await r.json();
+        
+        if (r.ok) {
+          showMessage(d.message || d.mensage, 'success');
+          const row = document.getElementById(`row-${id}`);
+          if (row) row.remove();
+          
+          const body = document.getElementById('table-body');
+          if (body.children.length === 0) {
+            document.getElementById('orders-table').classList.add('hidden');
+            document.getElementById('no-data').classList.remove('hidden');
+          }
+          await checkStatus();
+        } else {
+          showMessage(d.error || 'Error.', 'error');
+        }
+      } catch {
+        showMessage('Connection error.', 'error');
+      }
+    }
+
+    function showMessage(text, type) {
+      const div = document.getElementById('message');
+      div.textContent = text; 
+      div.className = `message ${type}`;
+      div.classList.remove('hidden');
+      setTimeout(() => div.classList.add('hidden'), 4000);
+    }
+
+    window.onload = async function() {
+      await checkStatus();
+      await loadOrders();
+    };
+  </script>
 </body>
 </html>
