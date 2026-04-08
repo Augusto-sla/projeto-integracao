@@ -233,4 +233,4 @@ X-API-Key: senai-cybersystems-2026-secure-key
 ## Licença
 Este projeto está licenciado sob a licença **BSD 3-Clause** - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-Projeto desenvolvido para fins educacionais — SENAI CyberSystems 2026.
+Projeto desenvolvido para fins educacionais — CENTROWEG/SENAI CyberSystems 2026.
