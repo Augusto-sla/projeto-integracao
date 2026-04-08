@@ -1,4 +1,5 @@
-Projeto desenvolvido por Augusto P. Dantas - MA77
+### Projeto desenvolvido por Augusto P. Dantas - MA77
+
 Discente: Lucas Sousa dos Santos
 
 # 📦 Production Order System
@@ -220,14 +221,14 @@ X-API-Key: senai-cybersystems-2026-secure-key
 
 ---
 ### Modelo do Banco de Dados
-
-| Orders         |
-|----------------------|-------------|---------------------------------|
-| int    | ID         |PK|
-| String | product    |  |
-| int    | quantity   |  |
-| String | status     |  |
-| String | created_at |  |
+#### Tabela: Orders
+| Tipo     | Campo      | Chave  |
+| :---     | :---       | :---:  |
+| `int`    | **ID**     | **PK** |
+| `String` | product    |        |
+| `int`    | quantity   |        |
+| `String` | status     |        |
+| `String` | created_at |        |
 
 ## Validações
 
