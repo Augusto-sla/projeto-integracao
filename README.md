@@ -1,3 +1,6 @@
+Projeto desenvolvido por Augusto P. Dantas - MA77
+Discente: Lucas Sousa dos Santos
+
 # 📦 Production Order System
 
 Sistema web para gerenciamento de ordens de produção, com interface frontend em HTML/CSS/JavaScript e backend REST API em Python (Flask) com banco de dados SQLite.
@@ -216,6 +219,15 @@ X-API-Key: senai-cybersystems-2026-secure-key
 | `database.py`  | Docstrings inline no arquivo   |
 
 ---
+### Modelo do Banco de Dados
+
+| Orders         |
+|----------------------|-------------|---------------------------------|
+| int    | ID         |PK|
+| String | product    |  |
+| int    | quantity   |  |
+| String | status     |  |
+| String | created_at |  |
 
 ## Validações
 
