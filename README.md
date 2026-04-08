@@ -83,13 +83,14 @@ cd production-order-system
 ### 2. Instale as dependências
 
 ```bash
-pip install flask flask-cors
+pip install -r requirements.txt
 ```
 
 ### 3. Inicie o servidor
 
 ```bash
-python app.py
+windows:   python app.py
+Linux/Mac: python3 app.py
 ```
 
 O servidor estará disponível em: `http://localhost:5000`
@@ -197,9 +198,9 @@ X-API-Key: senai-cybersystems-2026-secure-key
 | Chave inválida       | 403         | `Invalid or expired API Key.`   |
 | Chave correta        | 2xx         | Operação realizada com sucesso  |
 
-> ⚠️ Em produção, substitua a chave por uma variável de ambiente:
+> substitua a chave na .env.example pela sua chave pessoal:
 > ```python
-> API_KEY = os.environ.get('API_KEY')
+> API_KEY = 'Extremely-Secure-API-KEY'
 > ```
 
 ---
@@ -230,5 +231,6 @@ X-API-Key: senai-cybersystems-2026-secure-key
 ---
 
 ## Licença
+Este projeto está licenciado sob a licença **BSD 3-Clause** - consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 Projeto desenvolvido para fins educacionais — SENAI CyberSystems 2026.
